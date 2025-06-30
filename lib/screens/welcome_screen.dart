@@ -1,6 +1,8 @@
+import 'package:flash_chat_flutter/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatefulWidget {
+  static String id = 'welcome_screen';
   const WelcomeScreen({super.key});
 
   @override
@@ -36,7 +38,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 color: Colors.lightBlueAccent,
                 borderRadius: BorderRadius.circular(30.0),
                 child: MaterialButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushNamed(context, LoginScreen.id);
+                  },
                   minWidth: 200.0,
                   height: 42.0,
                   child: Text('Log In'),
