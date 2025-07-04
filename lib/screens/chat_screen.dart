@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flash_chat_flutter/constants.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
@@ -12,7 +14,9 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
+  final _fileStore = FirebaseFirestore.instance;
   User? loggedUser;
+  String message = '';
 
   @override
   void initState() {
@@ -33,6 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: null,
         actions: [
@@ -44,8 +49,43 @@ class _ChatScreenState extends State<ChatScreen> {
             icon: Icon(Icons.close),
           ),
         ],
-        title: Text('Chat'),
+        title: Text('⚡️Chat'),
+        centerTitle: true,
         backgroundColor: Colors.lightBlueAccent,
+      ),
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              decoration: kMessageContainerDecoration,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) {
+                        message = value;
+                      },
+                      style: TextStyle(color: Colors.black),
+                      decoration: kMessageTextFieldDecoration,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      _fileStore.collection('messages').add({
+                        'text': message,
+                        'sender': _auth.currentUser?.email,
+                      });
+                    },
+                    child: Text('Send', style: kSendButtonTextStyle),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
