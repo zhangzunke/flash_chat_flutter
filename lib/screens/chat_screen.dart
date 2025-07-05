@@ -16,7 +16,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
   final _fileStore = FirebaseFirestore.instance;
   User? loggedUser;
-  String message = '';
+  String textMessage = '';
 
   @override
   void initState() {
@@ -34,6 +34,15 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void messagesStream() {
+    _fileStore.collection('messages').snapshots().listen((snapshot) {
+      for (var change in snapshot.docChanges) {
+        var data = change.doc.data();
+        print(data);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,8 +52,9 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              _auth.signOut();
-              Navigator.pop(context);
+              // _auth.signOut();
+              // Navigator.pop(context);
+              messagesStream();
             },
             icon: Icon(Icons.close),
           ),
@@ -58,6 +68,20 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            StreamBuilder<QuerySnapshot>(
+              stream: _fileStore.collection('messages').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.lightBlueAccent,
+                    ),
+                  );
+                }
+                List<Text> messageWidgets = [];
+                return Column(children: messageWidgets);
+              },
+            ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -66,7 +90,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        message = value;
+                        textMessage = value;
                       },
                       style: TextStyle(color: Colors.black),
                       decoration: kMessageTextFieldDecoration,
@@ -75,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   TextButton(
                     onPressed: () {
                       _fileStore.collection('messages').add({
-                        'text': message,
+                        'text': textMessage,
                         'sender': _auth.currentUser?.email,
                       });
                     },
